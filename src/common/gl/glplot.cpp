@@ -14,14 +14,14 @@
 class gl_plot
 {
 public:
-    template <class RangeT>
-    void draw(RangeT&& range) {
-        std::vector<float> time(range.size());
-        for (int i = 0; i < time.size(); ++i)
-        {
-            time[i] = (float(i) / (time.size() - 1)) * 2 - 1.f;
-        }
-
+    void draw(
+            const std::vector<float>& time,
+            const std::vector<float>& range,
+            glm::vec3 color,
+            int line_width,
+            float val_min,
+            float val_max)
+    {
         GLuint bufs[2];
 
         glGenBuffers(2, bufs);
@@ -46,9 +46,25 @@ public:
         glEnableVertexAttribArray(1);
 
         m_prog->use();
+        m_prog->set_variable("Color", color);
+        m_prog->set_variable("Min", val_min);
+        m_prog->set_variable("Max", val_max);
 
-        glLineWidth(2);
+        glLineWidth(line_width);
         glDrawArrays(GL_LINE_STRIP, 0, range.size());
+    }
+
+    void draw(const std::vector<float>& range) {
+        std::vector<float> time(range.size());
+
+        for (int i = 0; i < time.size(); ++i)
+        {
+            time[i] = (float(i) / (time.size() - 1)) * 2 - 1.f;
+        }
+
+        auto [val_min, val_max] = std::minmax_element(range.begin(), range.end());
+
+        draw(time, range, glm::vec3{1, 1, 0}, 2, *val_min, *val_max);
     }
 
     gl_plot(fastpl::gl::ctx& ctx, std::shared_ptr<rtk::gl::program> prog)
@@ -64,25 +80,32 @@ precision mediump float;
 in float time;
 in float elem;
 
+uniform float Min;
+uniform float Max;
+
 void main()
 {
-    gl_Position = vec4(time, elem, 0, 1.0);
+    float val = ((elem - Min) / (Max - Min)) * 1.8f - 0.9f;
+    gl_Position = vec4(time, val, 0, 1.0);
 }
 )__";
 
 constexpr auto frag = R"__(#version 300 es
 precision mediump float;
 out vec4 FragColor;
+uniform vec3 Color;
 
 void main()
 {
-    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+    FragColor = vec4(Color, 1.0f);
 }
 )__";
 
+std::vector<float> v{0.3, 0.5};
+
 void enter(gl_plot& plotter)
 {
-    std::vector<float> v{0.3, 0.5, 0.1, 0.7, 0.2, 0.8, -0.2};
+    v.push_back((rand() % 256) - 128);
     plotter.draw(v);
 }
 

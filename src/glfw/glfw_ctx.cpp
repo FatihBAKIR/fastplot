@@ -2,6 +2,7 @@
 #include <fastplot/gl/ctx.hpp>
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <thread>
 
 using namespace fastpl;
 
@@ -81,6 +82,8 @@ int main() {
         make_plotter(context);
 
         context.end_draw();
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(30ms);
     }
     std::cout << "Hello, World!" << std::endl;
     return 0;

@@ -108,11 +108,11 @@ std::vector<float> v{0.3, 0.5};
 
 void enter(gl_plot& plotter)
 {
-    if (v.size() >= 100)
+    if (v.size() >= 1'000)
     {
         v.erase(v.begin());
     }
-    v.push_back((rand() % 256) - 128);
+    v.push_back(rand());
     plotter.draw(v);
 }
 

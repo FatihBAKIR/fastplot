@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <thread>
+#include <chrono>
 
 using namespace fastpl;
 
@@ -79,11 +80,14 @@ int main() {
         context.activate();
         context.begin_draw();
 
+        auto beg = std::chrono::high_resolution_clock::now();
         make_plotter(context);
+        auto diff = std::chrono::high_resolution_clock::now() - beg;
 
         context.end_draw();
         using namespace std::chrono_literals;
-        std::this_thread::sleep_for(500ms);
+        std::cerr << std::chrono::duration_cast<std::chrono::microseconds>(diff).count() << '\n';
+        std::this_thread::sleep_for(50ms);
     }
     std::cout << "Hello, World!" << std::endl;
     return 0;

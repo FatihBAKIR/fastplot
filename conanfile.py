@@ -29,6 +29,7 @@ class FastPlotConanfile(ConanFile):
         self.requires("glad/0.1.29@bincrafters/stable")
         self.requires("gsl_microsoft/20180102@bincrafters/stable")
         if (self.settings.os != "Emscripten"):
+            self.requires("xorgproto/2018.4@bincrafters/stable")
             self.requires("glfw/3.3@bincrafters/stable")
 
     def source(self):

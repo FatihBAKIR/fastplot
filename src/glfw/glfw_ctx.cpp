@@ -41,11 +41,12 @@ gl::ctx fastpl::gl::make_ctx()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    auto m_wnd = glfwCreateWindow(1500, 1000, "FastPlot", nullptr, nullptr);
+    auto m_wnd = glfwCreateWindow(750, 500, "FastPlot", nullptr, nullptr);
     glfwSetErrorCallback([](int error, const char *msg){
         throw std::runtime_error(msg);
     });
@@ -87,7 +88,7 @@ int main() {
         context.end_draw();
         using namespace std::chrono_literals;
         std::cerr << std::chrono::duration_cast<std::chrono::microseconds>(diff).count() << '\n';
-        std::this_thread::sleep_for(50ms);
+        std::this_thread::sleep_for(20ms);
     }
     std::cout << "Hello, World!" << std::endl;
     return 0;

@@ -11,6 +11,10 @@
 #include <rtk/gl/program.hpp>
 #include <rtk/gl/shader.hpp>
 
+#include <emscripten/bind.h>
+
+using namespace emscripten;
+
 using namespace fastpl;
 
 gl::ctx::ctx(std::unique_ptr<fastpl::gl::arch_ctx> impl) : m_impl{std::move(impl)} {}
@@ -27,7 +31,7 @@ void gl::ctx::activate() {
 }
 
 void fastpl::gl::ctx::begin_draw() {
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.2f, 0.3f, 0.3f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -37,7 +41,7 @@ void fastpl::gl::ctx::end_draw() {
 
 extern "C" { extern void* emscripten_GetProcAddress(const char *x); }
 
-gl::ctx fastpl::gl::make_ctx()
+gl::ctx make_ctx(const std::string& canvas)
 {
     EmscriptenWebGLContextAttributes attr{};
     emscripten_webgl_init_context_attributes(&attr);
@@ -49,8 +53,10 @@ gl::ctx fastpl::gl::make_ctx()
     attr.majorVersion = 2;
     attr.minorVersion = 0;
     attr.explicitSwapControl = true;
+    attr.antialias = true;
 
-    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context("#canvas", &attr);
+    std::cerr << "canvas: " << canvas << '\n';
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(canvas.c_str(), &attr);
 
     if (ctx <= 0)
     {
@@ -74,80 +80,34 @@ gl::ctx fastpl::gl::make_ctx()
     return std::move(res);
 }
 
-constexpr auto vert = R"__(#version 300 es
-precision mediump float;
-in vec3 aPos;
-
-void main()
+gl::ctx fastpl::gl::make_ctx()
 {
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    return ::make_ctx("#canvas");
 }
-)__";
 
-constexpr auto frag = R"__(#version 300 es
-precision mediump float;
-out vec4 FragColor;
-
-void main()
+using ctx_ptr = std::shared_ptr<fastpl::gl::ctx>;
+ctx_ptr make_ctx_wrapper(const std::string& canvas)
 {
-    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+    return std::make_shared<fastpl::gl::ctx>(make_ctx(canvas));
 }
-)__";
-
-gl::ctx* c;
-unsigned int VBO;
-unsigned int VAO;
-std::shared_ptr<rtk::gl::program> shader;
 
 void make_plotter(fastpl::gl::ctx& ctx);
-int main()
+
+void draw(ctx_ptr ptr)
 {
-    c = new gl::ctx(gl::make_ctx());
+    ptr->activate();
+    ptr->begin_draw();
 
-    c->activate();
+    glLineWidth(4);
+    make_plotter(*ptr);
 
-    shader = std::make_shared<rtk::gl::program>();
+    ptr->end_draw();
+}
 
-    {
-        rtk::gl::vertex_shader mesh_vs { vert };
-        rtk::gl::fragment_shader mesh_fs { frag };
-        shader->attach(mesh_vs);
-        shader->attach(mesh_fs);
-        shader->link();
-    }
-
-    float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f,  0.5f, 0.0f
-    };
-
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-// 2. copy our vertices array in a buffer for OpenGL to use
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-// 3. then set our vertex attributes pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    emscripten_set_main_loop([]{
-        c->activate();
-        c->begin_draw();
-
-        shader->use();
-
-        //glBindVertexArray(VAO);
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
-        make_plotter(*c);
-
-        c->end_draw();
-    }, 0, false);
+EMSCRIPTEN_BINDINGS(fastplot)
+{
+    class_<fastpl::gl::ctx>("context")
+        .smart_ptr<ctx_ptr>("context");
+    function("make_ctx", &make_ctx_wrapper);
+    function("draw", &draw);
 }

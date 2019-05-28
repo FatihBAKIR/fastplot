@@ -67,7 +67,7 @@ public:
 
         auto [val_min, val_max] = std::minmax_element(range.begin(), range.end());
 
-        draw(time, range, glm::vec3{1, 1, 0}, 2, *val_min, *val_max);
+        draw(time, range, glm::vec3{1, 1, 0}, 10, *val_min, *val_max);
     }
 
     gl_plot(fastpl::gl::ctx& ctx, std::shared_ptr<rtk::gl::program> prog)
@@ -116,19 +116,25 @@ void enter(gl_plot& plotter)
     plotter.draw(v);
 }
 
+std::unique_ptr<gl_plot> plotter;
+
 void make_plotter(fastpl::gl::ctx& ctx)
 {
-    ctx.activate();
-    auto shader = std::make_shared<rtk::gl::program>();
+    if (!plotter)
     {
-        rtk::gl::vertex_shader mesh_vs{vert};
-        rtk::gl::fragment_shader mesh_fs{frag};
-        shader->attach(mesh_vs);
-        shader->attach(mesh_fs);
-        shader->link();
+        ctx.activate();
+
+        auto shader = std::make_shared<rtk::gl::program>();
+        {
+            rtk::gl::vertex_shader mesh_vs{vert};
+            rtk::gl::fragment_shader mesh_fs{frag};
+            shader->attach(mesh_vs);
+            shader->attach(mesh_fs);
+            shader->link();
+        }
+
+        plotter = std::make_unique<gl_plot>(ctx, shader);
     }
 
-    gl_plot plot{ctx, shader};
-
-    enter(plot);
+    enter(*plotter);
 }

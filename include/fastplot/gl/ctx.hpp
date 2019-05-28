@@ -22,10 +22,9 @@ public:
     ~ctx();
 
     ctx(ctx&&) noexcept;
+    explicit ctx(std::unique_ptr<arch_ctx> impl);
 
 private:
-
-    explicit ctx(std::unique_ptr<arch_ctx> impl);
 
     std::unique_ptr<arch_ctx> m_impl;
     friend gl::ctx make_ctx();

@@ -52,6 +52,9 @@ public:
 
         glLineWidth(line_width);
         glDrawArrays(GL_LINE_STRIP, 0, range.size());
+
+        glDeleteBuffers(2, bufs);
+        glDeleteVertexArrays(1, &vao);
     }
 
     void draw(const std::vector<float>& range) {
@@ -105,6 +108,10 @@ std::vector<float> v{0.3, 0.5};
 
 void enter(gl_plot& plotter)
 {
+    if (v.size() >= 100)
+    {
+        v.erase(v.begin());
+    }
     v.push_back((rand() % 256) - 128);
     plotter.draw(v);
 }

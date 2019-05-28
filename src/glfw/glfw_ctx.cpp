@@ -44,7 +44,7 @@ gl::ctx fastpl::gl::make_ctx()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    auto m_wnd = glfwCreateWindow(640, 480, "FastPlot", nullptr, nullptr);
+    auto m_wnd = glfwCreateWindow(1500, 1000, "FastPlot", nullptr, nullptr);
     glfwSetErrorCallback([](int error, const char *msg){
         throw std::runtime_error(msg);
     });
@@ -83,7 +83,7 @@ int main() {
 
         context.end_draw();
         using namespace std::chrono_literals;
-        std::this_thread::sleep_for(30ms);
+        std::this_thread::sleep_for(500ms);
     }
     std::cout << "Hello, World!" << std::endl;
     return 0;

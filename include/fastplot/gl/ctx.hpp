@@ -21,11 +21,11 @@ public:
 
     ~ctx();
 
-    ctx(ctx&&) = default;
+    ctx(ctx&&) noexcept;
 
 private:
 
-    explicit ctx(std::unique_ptr<arch_ctx> impl) : m_impl{std::move(impl)} {}
+    explicit ctx(std::unique_ptr<arch_ctx> impl);
 
     std::unique_ptr<arch_ctx> m_impl;
     friend gl::ctx make_ctx();

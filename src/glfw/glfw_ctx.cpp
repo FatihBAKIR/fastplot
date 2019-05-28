@@ -5,9 +5,13 @@
 
 using namespace fastpl;
 
+gl::ctx::ctx(std::unique_ptr<fastpl::gl::arch_ctx> impl) : m_impl{std::move(impl)} {}
+
+gl::ctx::ctx(fastpl::gl::ctx &&) noexcept = default;
 struct gl::arch_ctx {
     GLFWwindow* m_wnd;
 };
+
 
 gl::ctx::~ctx() = default;
 
@@ -64,12 +68,18 @@ gl::ctx fastpl::gl::make_ctx()
 
     return std::move(res);
 }
+
+void make_plotter(fastpl::gl::ctx& ctx);
+
 int main() {
     auto context = gl::make_ctx();
     while (true)
     {
         context.activate();
         context.begin_draw();
+
+        make_plotter(context);
+
         context.end_draw();
     }
     std::cout << "Hello, World!" << std::endl;

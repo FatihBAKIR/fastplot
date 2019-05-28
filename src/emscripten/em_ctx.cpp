@@ -13,6 +13,9 @@
 
 using namespace fastpl;
 
+gl::ctx::ctx(std::unique_ptr<fastpl::gl::arch_ctx> impl) : m_impl{std::move(impl)} {}
+gl::ctx::ctx(fastpl::gl::ctx &&) noexcept = default;
+
 struct gl::arch_ctx {
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE m_handle;
 };
@@ -96,6 +99,7 @@ unsigned int VBO;
 unsigned int VAO;
 std::shared_ptr<rtk::gl::program> shader;
 
+void make_plotter(fastpl::gl::ctx& ctx);
 int main()
 {
     c = new gl::ctx(gl::make_ctx());
@@ -125,12 +129,6 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 // 2. copy our vertices array in a buffer for OpenGL to use
@@ -146,8 +144,9 @@ int main()
 
         shader->use();
 
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        //glBindVertexArray(VAO);
+        //glDrawArrays(GL_TRIANGLES, 0, 3);
+        make_plotter(*c);
 
         c->end_draw();
     }, 0, false);

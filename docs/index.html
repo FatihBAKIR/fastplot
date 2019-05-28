@@ -1,0 +1,46 @@
+<head>
+  <script>
+    let total = 0;
+    let cnt = 0;
+    let points = 2;
+    var fastplot = {
+      onRuntimeInitialized: function() {
+          const ctx = fastplot.make_ctx("canvas");
+
+          const draw = (ts) => {
+
+              const t = performance.now();
+
+              fastplot.draw(ctx);
+
+              const diff = performance.now() - t;
+
+            const fps = (1000 / diff) | 0;
+            total += fps;
+            ++cnt;
+            ++points;
+            
+              document.getElementById("fps").innerText = fps;
+              document.getElementById("avgfps").innerText = (total / cnt) | 0;
+              document.getElementById("points").innerText = (points) | 0;
+
+                window.requestAnimationFrame(draw);
+          };
+
+          draw();
+      }
+    };
+  </script>
+
+  <script src="emplot.js"></script>
+</head>
+
+<body style="background-color:white;">
+    <canvas id="canvas" width="750" height="500" style="width:750px; height:500px;"></canvas>
+    <br/>
+    Last: <span id="fps"></span> FPS
+    <br/>
+    Average: <span id="avgfps"></span> FPS
+    <br/>
+    #points: <span id="points"></span>
+</body>

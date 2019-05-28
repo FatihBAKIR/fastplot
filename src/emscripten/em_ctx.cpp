@@ -31,7 +31,7 @@ void gl::ctx::activate() {
 }
 
 void fastpl::gl::ctx::begin_draw() {
-    glClearColor(0.2f, 0.3f, 0.3f, 0.0f);
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -53,7 +53,7 @@ gl::ctx make_ctx(const std::string& canvas)
     attr.majorVersion = 2;
     attr.minorVersion = 0;
     attr.explicitSwapControl = true;
-    attr.antialias = true;
+    attr.antialias = false;
 
     std::cerr << "canvas: " << canvas << '\n';
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(canvas.c_str(), &attr);
@@ -98,7 +98,6 @@ void draw(ctx_ptr ptr)
     ptr->activate();
     ptr->begin_draw();
 
-    glLineWidth(4);
     make_plotter(*ptr);
 
     ptr->end_draw();

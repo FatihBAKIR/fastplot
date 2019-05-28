@@ -29,6 +29,6 @@ private:
     std::unique_ptr<arch_ctx> m_impl;
     friend gl::ctx make_ctx();
 };
-    gl::ctx make_ctx();
+gl::ctx make_ctx();
 }
 }

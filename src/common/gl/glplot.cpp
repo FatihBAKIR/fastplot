@@ -10,27 +10,28 @@
 #include <glm/glm.hpp>
 #include <numeric>
 #include <rtk/gl/shader.hpp>
+#include <gsl/span>
 
 class gl_plot
 {
 public:
     void draw(
-            const std::vector<float>& time,
-            const std::vector<float>& range,
-            glm::vec3 color,
-            int line_width,
-            float val_min,
-            float val_max)
+        gsl::span<const float> time,
+        gsl::span<const float> range,
+        glm::vec3 color,
+        int line_width,
+        float val_min,
+        float val_max)
     {
         GLuint bufs[2];
 
         glGenBuffers(2, bufs);
 
         glBindBuffer(GL_ARRAY_BUFFER, bufs[0]);
-        glBufferData(GL_ARRAY_BUFFER, time.size() * sizeof(float), time.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, time.size_bytes(), time.data(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ARRAY_BUFFER, bufs[1]);
-        glBufferData(GL_ARRAY_BUFFER, range.size() * sizeof(float), range.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, range.size_bytes(), range.data(), GL_STATIC_DRAW);
 
         GLuint vao;
         glGenVertexArrays(1, &vao);
@@ -50,14 +51,17 @@ public:
         m_prog->set_variable("Min", val_min);
         m_prog->set_variable("Max", val_max);
 
-        glLineWidth(line_width);
-        glDrawArrays(GL_LINE_STRIP, 0, range.size());
+        for (int i = -line_width / 2; i <= line_width / 2; ++i)
+        {
+            m_prog->set_variable("Shift", float(i) / 1500);
+            glDrawArrays(GL_LINE_STRIP, 0, range.size());
+        }
 
         glDeleteBuffers(2, bufs);
         glDeleteVertexArrays(1, &vao);
     }
 
-    void draw(const std::vector<float>& range) {
+    void draw(gsl::span<const float> range) {
         std::vector<float> time(range.size());
 
         for (int i = 0; i < time.size(); ++i)
@@ -67,7 +71,29 @@ public:
 
         auto [val_min, val_max] = std::minmax_element(range.begin(), range.end());
 
-        draw(time, range, glm::vec3{1, 1, 0}, 10, *val_min, *val_max);
+        draw_line_x(-1, -1, 1);
+        draw_line_x(1, -1, 1);
+        draw_line_y(-1, -1, 1);
+        draw_line_y(1, -1, 1);
+
+        draw_line_y(0, *val_min, *val_max);
+        draw(time, range, glm::vec3{1, 1, 0}, 5, *val_min, *val_max);
+    }
+
+    void draw_line_x(float x, float min, float max)
+    {
+        const std::array<float, 2> time { x, x };
+        constexpr std::array<float, 2> range { -1, 1 };
+
+        draw(time, range, glm::vec3{0.7, 0.7, 0.7}, 1, min, max);
+    }
+
+    void draw_line_y(float y, float min, float max)
+    {
+        constexpr std::array<float, 2> time { -1, 1 };
+        const std::array<float, 2> range { y, y };
+
+        draw(time, range, glm::vec3{0.7, 0.7, 0.7}, 1, min, max);
     }
 
     gl_plot(fastpl::gl::ctx& ctx, std::shared_ptr<rtk::gl::program> prog)
@@ -86,10 +112,13 @@ in float elem;
 uniform float Min;
 uniform float Max;
 
+uniform float Shift;
+
 void main()
 {
+    float tim = ((time + Shift + 1.f) / 2.f) * 1.8f - 0.9f;
     float val = ((elem - Min) / (Max - Min)) * 1.8f - 0.9f;
-    gl_Position = vec4(time, val, 0, 1.0);
+    gl_Position = vec4(tim, val, 0, 1.0);
 }
 )__";
 
@@ -108,11 +137,11 @@ std::vector<float> v{0.3, 0.5};
 
 void enter(gl_plot& plotter)
 {
-    if (v.size() >= 1'000)
+    if (v.size() >= 120'000)
     {
         v.erase(v.begin());
     }
-    v.push_back(rand());
+    v.push_back((rand() % 255) - 128);
     plotter.draw(v);
 }
 

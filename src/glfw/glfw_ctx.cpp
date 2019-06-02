@@ -60,7 +60,7 @@ gl::ctx fastpl::gl::make_ctx()
     auto res = gl::ctx{ std::move(ac) };
 
     res.activate();
-    if (!gladLoadGLLoader([](const char* nm) -> void* {
+    if (!gladLoadGLES2Loader([](const char* nm) -> void* {
         return reinterpret_cast<void*>(glfwGetProcAddress(nm));
     }))
     {
@@ -74,7 +74,7 @@ void make_plotter(fastpl::gl::ctx& ctx);
 
 int main() {
     auto context = gl::make_ctx();
-    while (true)
+    while (!glfwWindowShouldClose(context.get_native_handle().m_wnd))
     {
         context.activate();
         context.begin_draw();
@@ -86,6 +86,6 @@ int main() {
         context.end_draw();
         using namespace std::chrono_literals;
         std::cerr << std::chrono::duration_cast<std::chrono::microseconds>(diff).count() << '\n';
-        std::this_thread::sleep_for(100ms);
+        std::this_thread::sleep_for(10ms);
     }
 }

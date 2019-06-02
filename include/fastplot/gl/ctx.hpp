@@ -24,6 +24,8 @@ public:
     ctx(ctx&&) noexcept;
     explicit ctx(std::unique_ptr<arch_ctx> impl);
 
+    arch_ctx& get_native_handle() { return *m_impl; }
+
 private:
 
     std::unique_ptr<arch_ctx> m_impl;

@@ -20,8 +20,8 @@ class FastPlotConanfile(ConanFile):
         "boost:without_graph_parallel" : True,
         "boost:without_serialization" : True,
         "glad:profile": "core",
-        "glad:api_type": "gl",
-        "glad:api_version": "3.1"
+        "glad:api_type": "gles2",
+        "glad:api_version": "3.0"
     }
 
     def requirements(self):

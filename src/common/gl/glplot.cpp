@@ -163,7 +163,7 @@ void gl_plot::draw_line(gsl::span<const float> range) {
     draw_line_y(1, -1, 1);
 
     draw_line_y(mean, *val_min, *val_max);
-    draw_line(time, range, glm::vec3{1, 1, 0}, 5, *val_min, *val_max);
+    draw_line(time, range, glm::vec3{0, 1, 1}, 5, *val_min, *val_max);
 }
 
 void gl_plot::draw_points(gsl::span<const float> range) {

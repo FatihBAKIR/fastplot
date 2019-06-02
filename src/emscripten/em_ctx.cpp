@@ -70,7 +70,7 @@ gl::ctx make_ctx(const std::string& canvas)
     auto res = gl::ctx{ std::move(ac) };
 
     res.activate();
-    if (!gladLoadGLLoader(emscripten_GetProcAddress))
+    if (!gladLoadGLES2Loader(emscripten_GetProcAddress))
     {
         std::cerr << "could not initialize glad\n";
 

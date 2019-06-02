@@ -14,7 +14,7 @@
               fastplot.draw(ctx);
 
               const diff = performance.now() - t;
-
+              
             const fps = (1000 / diff) | 0;
             total += fps;
             ++cnt;
@@ -24,7 +24,7 @@
               document.getElementById("avgfps").innerText = (total / cnt) | 0;
               document.getElementById("points").innerText = (points) | 0;
 
-                window.requestAnimationFrame(draw);
+              setTimeout(() => window.requestAnimationFrame(draw), 10);
           };
 
           draw();

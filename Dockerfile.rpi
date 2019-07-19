@@ -1,0 +1,35 @@
+FROM resin/rpi-raspbian:buster
+
+RUN apt-get update
+RUN apt-get install -y cmake python-pip
+RUN apt-get install -y python-setuptools
+RUN apt-get install -y g++ make
+
+RUN pip install wheel
+RUN pip install conan
+
+RUN conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan 
+
+RUN mkdir -p /workdir
+WORKDIR /workdir
+
+COPY conanfile.py .
+RUN mkdir build
+WORKDIR /workdir/build
+RUN conan install .. --build missing
+
+WORKDIR /workdir
+
+COPY . .
+
+WORKDIR /workdir/build
+
+RUN cmake ..
+
+RUN make -j4
+RUN mkdir package
+RUN cp src/glfw/glfwplot ./package
+RUN ldd ./package/glfwplot | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./package
+RUN tar cf package.tar ./package
+
+CMD ["/bin/bash"]

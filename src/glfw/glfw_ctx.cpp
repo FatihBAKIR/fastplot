@@ -36,7 +36,7 @@ gl::ctx fastpl::gl::make_ctx()
     glfwInit();
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
@@ -44,11 +44,11 @@ gl::ctx fastpl::gl::make_ctx()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    auto m_wnd = glfwCreateWindow(750, 500, "FastPlot", nullptr, nullptr);
     glfwSetErrorCallback([](int error, const char *msg){
         throw std::runtime_error(msg);
     });
 
+    auto m_wnd = glfwCreateWindow(750, 500, "FastPlot", nullptr, nullptr);
     if (!m_wnd)
     {
         throw std::runtime_error("Error:");
